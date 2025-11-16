@@ -1,0 +1,25 @@
+[project]
+name = "mc2glb"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Kevin Xu", email = "beaver2025@gmail.com"},
+]
+dependencies = ["mcworldlib>=2023.7.13", "nbtlib>=2.0.4", "numpy>=2.3.4", "Pillow>=12.0.0", "trimesh>=4.9.0", "pygltflib>=1.16.5", "scipy>=1.16.3"]
+requires-python = ">=3.13"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "mypy>=1.18.2",
+]
