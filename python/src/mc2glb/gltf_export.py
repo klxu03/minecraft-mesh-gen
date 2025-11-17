@@ -7,7 +7,7 @@ import trimesh
 from PIL import Image
 from pygltflib import GLTF2, Material, PbrMetallicRoughness
 
-from .mesher import RectFace
+from .mesher import RectFace, RectPrism
 from .geometry import quad_mesh_from_rects
 import numpy as np
 

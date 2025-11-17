@@ -5,6 +5,9 @@ import math
 Y_MIN, Y_MAX = -64, 319
 H = Y_MAX - Y_MIN + 1
 
+# Toggle this to enable/disable all debug output
+DEBUG = False
+
 def unpack_palette_indices(data_longs: np.ndarray, bits: int, count: int=4096) -> np.ndarray:
     """
     Unpack 4096 paletted indices from a section's packed LongArray using bits per entry
@@ -68,6 +71,8 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
     # Fall back to regular access
     if sections is None:
         sections = root.get("sections")
+        if DEBUG:
+            print(f"[debug] sections is none and root.get(sections) is {"none" if sections is None else "populated"}")
         if sections is None:
             level = root.get("Level", {})
             sections = level.get("sections") or level.get("Sections")
@@ -99,7 +104,12 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
             continue
 
         palette = [_name_from_palette_entry(e) for e in pal]
-        print(f"[debug] palette: {palette}")
+
+        palette_excluding_air = [p for p in palette if p != 'minecraft:air']
+        if len(palette_excluding_air) > 2:
+            if DEBUG:
+                print(f"[debug] palette excluding air: {palette_excluding_air}")
+
         data = bs.get("data")
 
         if len(palette) == 1 or data is None:
@@ -117,6 +127,7 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
         cube = np.empty((16, 16, 16), dtype=object)
         pos = 0
         for yy in range(16):
+            zx = np.empty((16, 16), dtype=object)
             for zz in range(16):
                 for xx in range(16):
                     pal_i = int(idx[pos])
@@ -124,9 +135,23 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
                     if pal_i >= len(palette):
                         pal_i = len(palette) - 1
                     cube[yy, xx, zz] = palette[pal_i]
+                    zx[zz, xx] = palette[pal_i]
                     pos += 1
+            
+            # if zx contains any block that isn't grass_block, air, or bedrock, print it
+            unique_blocks = set(zx.flatten())
+            if not unique_blocks.issubset({'minecraft:grass_block', 'minecraft:air', 'minecraft:bedrock', 'minecraft:dirt'}):
+                if DEBUG:
+                    print(f"[debug] y: {yy}")
+                    for z in range(16):
+                        for x in range(16):
+                            print(f"{zx[z, x].removeprefix('minecraft:')[:3]}", end=" ")
+                        print()
 
-        print(f"[debug] cube: {cube}")
+        # cube excluding air, bedrock, grass_block
+        # cube_excluding_air = [c for c in cube.flatten() if c != 'minecraft:air' and c != 'minecraft:bedrock' and c != 'minecraft:grass_block']
+        # print(f"[debug] cube excluding air: {cube_excluding_air}")
+
         ys0 = max(y0, 0)
         ys1 = min(y1, H)
 

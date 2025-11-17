@@ -9,7 +9,7 @@ from .nbt_decode import chunk_to_blocknames, H, Y_MIN
 from .blocks import is_passable
 from .atlas import PackFS, collect_textures_for_blocks
 from .floodfill import flood_fill_reachable
-from .mesher import extract_faces, RectFace
+from .mesher import extract_faces, RectFace, RectPrism
 from .geometry import quad_mesh_from_rects
 from .gltf_export import export_tile_glb
 
@@ -100,7 +100,7 @@ def bake_roi_to_tiles(
 
     # water_rects_all = []
 
-    print("[debug] finished extract_faces")
+    print("[debug] finished extract_faces and greedy meshing")
 
     # 8 Export per tile (clip rects to tile bounds). Use absolute ROI coordinates (origin_xz=(0, 0))
     for (tx0, tz0, tx1, tz1) in world_io.tiles_in_chunks(cx0, cz0, cx1, cz1, tile_chunks):
@@ -108,6 +108,8 @@ def bake_roi_to_tiles(
         bz0 = (tz0 - cz0_h) * 16
         bx1 = (tx1 - cx0_h + 1) * 16
         bz1 = (tz1 - cz0_h + 1) * 16
+
+        print(f"[debug] tx0 {tx0} tz0 {tz0} tx1 {tx1} tz1 {tz1} bx0 {bx0} bz0 {bz0} bx1 {bx1} bz1 {bz1}")
 
         rects_opaque = _clip_rects_to_tile(opaque_rects_all, bx0, bz0, bx1, bz1)
         rects_water = _clip_rects_to_tile(water_rects_all, bx0, bz0, bx1, bz1)
@@ -238,8 +240,8 @@ if __name__ == "__main__":
     DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "flat.zip"
     DEFAULT_PACK = PROJECT_ROOT / "input" / "resource_packs" / "1.21.9-Template.zip"
 
-    DEFAULT_ROI = (0, 0, 64, 64) # x0, z0, x1, z1 in blocks
-    TILE_CHUNKS = 8
+    DEFAULT_ROI = (0, 0, 32, 32) # x0, z0, x1, z1 in blocks
+    TILE_CHUNKS = 2
     OUT_DIR = PROJECT_ROOT / "out"
 
     try:

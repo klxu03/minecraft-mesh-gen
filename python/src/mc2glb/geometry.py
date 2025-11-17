@@ -1,7 +1,7 @@
 from __future__ import annotations
 import numpy as np
 from typing import Dict, List, Tuple
-from .mesher import RectFace
+from .mesher import RectFace, RectPrism
 
 def quad_mesh_from_rects(
     rects: List[RectFace], 
