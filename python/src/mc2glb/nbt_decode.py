@@ -139,11 +139,10 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
 
                     # TODO do i really need this safety mechanism?
                     if pal_i >= len(palette):
-                        # print(f"[debug] palette: {palette}")
-                        print(f"xx {xx} yy {yy} zz {zz} and pal_i {pal_i} len(palette) {len(palette)}")
+                        if DEBUG:
+                            print(f"xx {xx} yy {yy} zz {zz} and pal_i {pal_i} len(palette) {len(palette)}")
                         # raise RuntimeError("Unexpected for pal_i to exceed len(palette)")
-                        # pal_i = len(palette) - 1
-                        # cube[yy, xx, zz] = "minecraft:diamond_block"
+                        cube[yy, xx, zz] = "minecraft:diamond_block"
                     else:
                         cube[yy, xx, zz] = palette[pal_i]
             

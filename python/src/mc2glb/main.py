@@ -105,31 +105,32 @@ def bake_roi_to_tiles(
 
     # 8 Export per tile (clip rects to tile bounds). Use absolute ROI coordinates (origin_xz=(0, 0))
     for (tx0, tz0, tx1, tz1) in world_io.tiles_in_chunks(cx0, cz0, cx1, cz1, tile_chunks):
-        bx0 = (tx0 - cx0_h) * 16
-        bz0 = (tz0 - cz0_h) * 16
-        bx1 = (tx1 - cx0_h + 1) * 16
-        bz1 = (tz1 - cz0_h + 1) * 16
+        try:
+            bx0 = (tx0 - cx0_h) * 16
+            bz0 = (tz0 - cz0_h) * 16
+            bx1 = (tx1 - cx0_h + 1) * 16
+            bz1 = (tz1 - cz0_h + 1) * 16
 
-        print(f"[debug] tx0 {tx0} tz0 {tz0} tx1 {tx1} tz1 {tz1} bx0 {bx0} bz0 {bz0} bx1 {bx1} bz1 {bz1}")
+            rects_opaque = _clip_rects_to_tile(opaque_rects_all, bx0, bz0, bx1, bz1)
+            rects_water = _clip_rects_to_tile(water_rects_all, bx0, bz0, bx1, bz1)
 
-        rects_opaque = _clip_rects_to_tile(opaque_rects_all, bx0, bz0, bx1, bz1)
-        rects_water = _clip_rects_to_tile(water_rects_all, bx0, bz0, bx1, bz1)
+            # build geometry buffers (absolute ROI coords origin_xz = (0, 0))
+            V, UV, N, F, _ = quad_mesh_from_rects(rects_opaque, uv_map, (0, 0), global_grid.shape)
+            opaque_buffers = (V, UV, N, F)
+            water_buffers = None
+            if rects_water:
+                VW, UW, NW, FW, _ = quad_mesh_from_rects(rects_water, uv_map, (0, 0), global_grid.shape)
+                water_buffers = (VW, UW, NW, FW)
+            
+            out_glb = out_dir / f"tile_{tx0}_{tz0}.glb"
+            export_tile_glb(out_glb, opaque_buffers, water_buffers, atlas_img, make_water_transparent=make_water_transparent)
 
-        # build geometry buffers (absolute ROI coords origin_xz = (0, 0))
-        V, UV, N, F, _ = quad_mesh_from_rects(rects_opaque, uv_map, (0, 0), global_grid.shape)
-        opaque_buffers = (V, UV, N, F)
-        water_buffers = None
-        if rects_water:
-            VW, UW, NW, FW, _ = quad_mesh_from_rects(rects_water, uv_map, (0, 0), global_grid.shape)
-            water_buffers = (VW, UW, NW, FW)
-        
-        out_glb = out_dir / f"tile_{tx0}_{tz0}.glb"
-        export_tile_glb(out_glb, opaque_buffers, water_buffers, atlas_img, make_water_transparent=make_water_transparent)
+            results["glb"].append(out_glb)
 
-        results["glb"].append(out_glb)
-
-        if draco:
-            raise NotImplementedError("TODO: Draco compression")
+            if draco:
+                raise NotImplementedError("TODO: Draco compression")
+        except Exception as e:
+            print(f"[debug] Exception {e} when exporting tile {tx0} {tz0}")
 
     
     # 9 Cleanup temp world directory
@@ -239,14 +240,15 @@ if __name__ == "__main__":
     PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
     # DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "flat.zip"
-    DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "first.zip"
+    # DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "first.zip"
+    DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "castleOnMountain.zip"
     # DEFAULT_PACK = PROJECT_ROOT / "input" / "resource_packs" / "1.21.9-Template.zip"
     DEFAULT_PACK = PROJECT_ROOT / "input" / "resource_packs" / "mad-pixels-16x-v14.zip"
 
-    DEFAULT_ROI = (0, 0, 32, 32) # x0, z0, x1, z1 in blocks
-    TILE_CHUNKS = 2
-    # DEFAULT_ROI = (-128, -128, 256, 256) # x0, z0, x1, z1 in blocks
-    # TILE_CHUNKS = 8
+    # DEFAULT_ROI = (0, 0, 16, 16) # x0, z0, x1, z1 in blocks
+    # TILE_CHUNKS = 1
+    DEFAULT_ROI = (-290, 176, 100, -228) # x0, z0, x1, z1 in blocks
+    TILE_CHUNKS = 8
     OUT_DIR = PROJECT_ROOT / "out"
 
     try:

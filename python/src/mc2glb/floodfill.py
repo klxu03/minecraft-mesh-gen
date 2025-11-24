@@ -52,6 +52,8 @@ def flood_fill_reachable(
         
         a = global_grid[y, x, z]
         b = global_grid[y + 1, x, z]
+        if a is None or b is None:
+            print(f"[debug] a is {a} and b is {b} and y is {y}, x is {x}, z is {z}")
         return is_passable(a) and is_passable(b)
 
     while q:

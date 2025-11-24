@@ -7,6 +7,8 @@ from PIL import Image
 import zipfile
 import math
 
+DEBUG = False
+
 class PackFS:
     """
     Pack File System: Thin wrapper over a resource pack ZIP
@@ -93,13 +95,13 @@ def collect_textures_for_blocks(pack: PackFS, block_ids: set[str], tile_px = 16)
     image_map: Dict[str, Image.Image] = {}
 
     for bid in block_ids:
-        print(f"[debug] bid is {bid}")
+        if DEBUG:
+            print(f"[debug] bid is {bid}")
         rel = pack.find_block_png(bid)
         if not rel: continue
 
         if rel not in image_map:
             img = pack.open_image(rel)
-            print(f"img is {img}")
             if img is None: continue
 
             image_map[rel] = img

@@ -3,6 +3,8 @@ import numpy as np
 from typing import Dict, List, Tuple
 from .mesher import RectFace, RectPrism
 
+DEBUG = False
+
 def quad_mesh_from_rects(
     rects: List[RectFace], 
     atlas_uv: Dict[str, Tuple[float, float, float, float]], 
@@ -88,7 +90,8 @@ def quad_mesh_from_rects(
             uv = [(u0, v0), (u0, v1), (u1, v1), (u1, v0)]
             nrm = (0.0, 0.0, -1.0)
         
-        print(f"[debug] adding quad tex_key {tex_key} with uv {uv}")
+        if DEBUG:
+            print(f"[debug] adding quad tex_key {tex_key} with uv {uv}")
         add_quad(vtx, uv, nrm, tex_key)
 
     V = np.asarray(vertices, dtype=np.float32)
