@@ -48,6 +48,7 @@ def bake_roi_to_tiles(
 
     world_root = world_io.unpack_zip_to_dir(world_zip, tmp_world_root)
     world = world_io.load_world(world_root)
+    print(f"[debug] loading world")
 
     # 2 ROI -> chunk bounds + halo
     cx0, cz0, cx1, cz1 = world_io.chunk_bounds_from_block_roi(*roi_blocks)
@@ -64,6 +65,7 @@ def bake_roi_to_tiles(
         ox = (cx - cx0_h) * 16
         oz = (cz - cz0_h) * 16
         global_grid[:, ox:ox+16, oz:oz+16] = grid
+    print(f"[debug] finished building dense global grid")
 
     # 4 Seeds for BFS (spawn if in ROI) and boundary air
     seeds: List[Tuple[int, int, int]] = []
@@ -73,8 +75,8 @@ def bake_roi_to_tiles(
         world_z0 = cz0_h * 16
         if (world_x0 <= spawn[0] < world_x0 + X and world_z0 <= spawn[2] < world_z0 + Z):
             seeds.append(spawn)
-
-    seeds.extend(_boundary_seeds_from_roi(global_grid, cx0_h * 16, cz0_h * 16))
+    else:
+        seeds.extend(_boundary_seeds_from_roi(global_grid, cx0_h * 16, cz0_h * 16))
 
     print("[debug] finished seeds")
 
@@ -88,8 +90,7 @@ def bake_roi_to_tiles(
     pack = PackFS(pack_zip)
     atlas_img, uv_map, block_tex_map = collect_textures_for_blocks(pack, used_blocks)
     if write_debug_atlas_png:
-        # _pil_to_png_bytes
-        raise NotImplementedError("TODO: write debug atlas PNG")
+        atlas_img.save("out/debug_atlas.png")
 
     print("[debug] finished collect_textures_for_blocks")
 
@@ -237,11 +238,15 @@ if __name__ == "__main__":
 
     PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-    DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "flat.zip"
-    DEFAULT_PACK = PROJECT_ROOT / "input" / "resource_packs" / "1.21.9-Template.zip"
+    # DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "flat.zip"
+    DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "first.zip"
+    # DEFAULT_PACK = PROJECT_ROOT / "input" / "resource_packs" / "1.21.9-Template.zip"
+    DEFAULT_PACK = PROJECT_ROOT / "input" / "resource_packs" / "mad-pixels-16x-v14.zip"
 
     DEFAULT_ROI = (0, 0, 32, 32) # x0, z0, x1, z1 in blocks
     TILE_CHUNKS = 2
+    # DEFAULT_ROI = (-128, -128, 256, 256) # x0, z0, x1, z1 in blocks
+    # TILE_CHUNKS = 8
     OUT_DIR = PROJECT_ROOT / "out"
 
     try:
@@ -253,7 +258,7 @@ if __name__ == "__main__":
             out_dir = OUT_DIR,
             halo_chunks = 1,
             make_water_transparent = True,
-            write_debug_atlas_png = False,
+            write_debug_atlas_png = True,
             draco = False,
             draco_level = 10,
         )

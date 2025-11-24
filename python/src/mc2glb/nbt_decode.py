@@ -12,6 +12,7 @@ def unpack_palette_indices(data_longs: np.ndarray, bits: int, count: int=4096) -
     """
     Unpack 4096 paletted indices from a section's packed LongArray using bits per entry
     """
+    # TODO is this possible? bits seems to be at min 4
     if bits < 1:
         return np.zeros((count,), dtype=np.uint32)
     
@@ -21,7 +22,7 @@ def unpack_palette_indices(data_longs: np.ndarray, bits: int, count: int=4096) -
     acc_bits = 0
     i = 0
 
-    # ensure uint64
+    # TODO ensure uint64 possibly unneeded as well since I had previous step converting data_longs to np.uint64
     longs = data_longs.astype(np.uint64, copy=False)
 
     for word_idx, word in enumerate(longs):
@@ -112,6 +113,10 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
 
         data = bs.get("data")
 
+        # TODO possibly unnecessary if short circuit, esp since I'm excluding air maybe this was for a previous time when the whole block was air
+        # Possible an entire section is just full water too. Trying to think right now maybe the short circuit is useful 
+        # but if it's air, I already default everything to being air so I can just straight up skip i palette_excluding_air == 0 or something then right?
+        if len(palette_excluding_air) == 0: continue
         if len(palette) == 1 or data is None:
             name = palette[0]
             ys0 = max(y0, 0)
@@ -127,31 +132,21 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
         cube = np.empty((16, 16, 16), dtype=object)
         pos = 0
         for yy in range(16):
-            zx = np.empty((16, 16), dtype=object)
             for zz in range(16):
                 for xx in range(16):
                     pal_i = int(idx[pos])
-
-                    if pal_i >= len(palette):
-                        pal_i = len(palette) - 1
-                    cube[yy, xx, zz] = palette[pal_i]
-                    zx[zz, xx] = palette[pal_i]
                     pos += 1
+
+                    # TODO do i really need this safety mechanism?
+                    if pal_i >= len(palette):
+                        # print(f"[debug] palette: {palette}")
+                        print(f"xx {xx} yy {yy} zz {zz} and pal_i {pal_i} len(palette) {len(palette)}")
+                        # raise RuntimeError("Unexpected for pal_i to exceed len(palette)")
+                        # pal_i = len(palette) - 1
+                        # cube[yy, xx, zz] = "minecraft:diamond_block"
+                    else:
+                        cube[yy, xx, zz] = palette[pal_i]
             
-            # if zx contains any block that isn't grass_block, air, or bedrock, print it
-            unique_blocks = set(zx.flatten())
-            if not unique_blocks.issubset({'minecraft:grass_block', 'minecraft:air', 'minecraft:bedrock', 'minecraft:dirt'}):
-                if DEBUG:
-                    print(f"[debug] y: {yy}")
-                    for z in range(16):
-                        for x in range(16):
-                            print(f"{zx[z, x].removeprefix('minecraft:')[:3]}", end=" ")
-                        print()
-
-        # cube excluding air, bedrock, grass_block
-        # cube_excluding_air = [c for c in cube.flatten() if c != 'minecraft:air' and c != 'minecraft:bedrock' and c != 'minecraft:grass_block']
-        # print(f"[debug] cube excluding air: {cube_excluding_air}")
-
         ys0 = max(y0, 0)
         ys1 = min(y1, H)
 
@@ -163,6 +158,7 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
     return out
 
 
+# TODO not sure what this is for. i could probably delete this function not sure what this artifact is from 
 def old_chunk_to_blocknames(chunk_nbt) -> np.ndarray:
     """
     Return a dense [H, 16, 16] array of block names for a chunk

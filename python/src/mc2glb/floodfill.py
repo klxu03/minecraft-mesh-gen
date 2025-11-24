@@ -33,6 +33,7 @@ def flood_fill_reachable(
     reachable = np.zeros((H, X, Z), dtype=np.bool_)
     q = deque()
 
+    # TODO too much vibecoded safety here to init q
     for sx, sy, sz in _iter_seeds(seeds or []):
         lx = int(sx) - world_x0
         lz = int(sz) - world_z0

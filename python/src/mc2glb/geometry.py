@@ -33,7 +33,14 @@ def quad_mesh_from_rects(
 
     for r in rects:
         axis, layer, i0, j0, i1, j1, tex_key = r
+        
         u0, v0, u1, v1 = atlas_uv[tex_key]
+        # GLTF uses a bottom-left UV origin, but our atlas packing math
+        # currently treats v=0 as the top of the image. Flip the V range so
+        # that textures sampled from the atlas line up with the GLTF
+        # coordinate system (otherwise the first row of tiles shows up where
+        # the last row should be, and vice-versa).
+        v0, v1 = 1.0 - v1, 1.0 - v0
 
         if axis == 0:
             x = layer + 1 + ox
@@ -81,6 +88,7 @@ def quad_mesh_from_rects(
             uv = [(u0, v0), (u0, v1), (u1, v1), (u1, v0)]
             nrm = (0.0, 0.0, -1.0)
         
+        print(f"[debug] adding quad tex_key {tex_key} with uv {uv}")
         add_quad(vtx, uv, nrm, tex_key)
 
     V = np.asarray(vertices, dtype=np.float32)

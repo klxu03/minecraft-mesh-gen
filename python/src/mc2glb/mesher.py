@@ -4,7 +4,7 @@ from typing import Dict, List, NamedTuple, Tuple
 from .blocks import is_solid, is_water
 
     # Toggle this to enable/disable all debug output
-DEBUG = True
+DEBUG = False
 
 class RectFace(NamedTuple):
     """

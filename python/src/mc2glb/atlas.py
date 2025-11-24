@@ -14,6 +14,7 @@ class PackFS:
 
     def __init__(self, pack_zip: Path):
         self.z = zipfile.ZipFile(pack_zip)
+        # self.list_all()
 
     def open_image(self, rel: str) -> Image.Image | None:
         """
@@ -30,7 +31,14 @@ class PackFS:
 
         cand = f"assets/minecraft/textures/block/{name}.png"
         if self.exists(cand): return cand
+        print(f"[debug] cand {cand} does not exist")
 
+        # cand_top = f"assets/minecraft/textures/block/{name}_top.png"
+        cand_top = f"assets/minecraft/textures/block/azalea_top.png"
+        print(f"[debug] attempting to use cand_top {cand_top}")
+        if self.exists(cand_top): return cand_top
+
+        print(f"[debug] cand {cand} and cand_top does not exist, using fallback")
         fallback = "assets/minecraft/textures/block/diamond_block.png"
         return fallback if self.exists(fallback) else None
 
@@ -40,6 +48,10 @@ class PackFS:
             return True
         except KeyError:
             return False
+
+    def list_all(self):
+        for file in self.z.filelist:
+            print(f"File {file}")
 
 def build_atlas(images: Dict[str, Image.Image], tile_px=16) -> Tuple[Image.Image, Dict[str, Tuple[float, float, float, float]]]:
     """
@@ -81,11 +93,13 @@ def collect_textures_for_blocks(pack: PackFS, block_ids: set[str], tile_px = 16)
     image_map: Dict[str, Image.Image] = {}
 
     for bid in block_ids:
+        print(f"[debug] bid is {bid}")
         rel = pack.find_block_png(bid)
         if not rel: continue
 
         if rel not in image_map:
             img = pack.open_image(rel)
+            print(f"img is {img}")
             if img is None: continue
 
             image_map[rel] = img
