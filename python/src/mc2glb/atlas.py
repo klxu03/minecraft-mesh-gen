@@ -8,6 +8,9 @@ import zipfile
 import math
 
 DEBUG = False
+block_texture_overrides = {
+    "snow_block": "snow"
+}
 
 class PackFS:
     """
@@ -30,6 +33,13 @@ class PackFS:
 
     def find_block_png(self, block_id: str) -> str | None:
         name = block_id.split(":", 1)[1]
+
+        if name == "air":
+            print(f"[debug] block_id given is {block_id}")
+
+        if name in block_texture_overrides:
+            name = block_texture_overrides[name]
+        # anything ending in _stairs or _fence
 
         cand = f"assets/minecraft/textures/block/{name}.png"
         if self.exists(cand): return cand

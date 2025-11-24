@@ -6,7 +6,7 @@ Y_MIN, Y_MAX = -64, 319
 H = Y_MAX - Y_MIN + 1
 
 # Toggle this to enable/disable all debug output
-DEBUG = True
+DEBUG = False
 
 def unpack_palette_indices(data_longs: np.ndarray, bits: int, count: int=4096) -> np.ndarray:
     """

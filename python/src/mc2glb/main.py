@@ -1,6 +1,8 @@
 from __future__ import annotations
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple, Dict, Set
+import time
+import sys
 
 import numpy as np
 
@@ -234,21 +236,20 @@ def _clip_rects_to_tile(rects: Iterable[RectFace], bx0: int, bz0: int, bx1: int,
     return out
 
 if __name__ == "__main__":
-    import os
-    import sys
+    start_time = time.time()
 
     PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
     # DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "flat.zip"
-    DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "first.zip"
-    # DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "castleOnMountain.zip"
+    # DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "first.zip"
+    DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "castleOnMountain.zip"
     # DEFAULT_PACK = PROJECT_ROOT / "input" / "resource_packs" / "1.21.9-Template.zip"
     DEFAULT_PACK = PROJECT_ROOT / "input" / "resource_packs" / "mad-pixels-16x-v14.zip"
 
-    DEFAULT_ROI = (0, 0, 16, 16) # x0, z0, x1, z1 in blocks
-    TILE_CHUNKS = 1
-    # DEFAULT_ROI = (-290, 176, 100, -228) # x0, z0, x1, z1 in blocks
-    # TILE_CHUNKS = 8
+    # DEFAULT_ROI = (0, 0, 16, 16) # x0, z0, x1, z1 in blocks
+    # TILE_CHUNKS = 1
+    DEFAULT_ROI = (-290, 176, 100, -228) # x0, z0, x1, z1 in blocks
+    TILE_CHUNKS = 8
     OUT_DIR = PROJECT_ROOT / "out"
 
     try:
@@ -276,3 +277,6 @@ if __name__ == "__main__":
         print("Draco GLBs:")
         for p in results["draco"]:
             print(f" {p}")
+    
+    end_time = time.time()
+    print(f"[mc2glb] Bake completed in {end_time - start_time:.2f} seconds")
