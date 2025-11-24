@@ -35,8 +35,8 @@ class PackFS:
         if self.exists(cand): return cand
         print(f"[debug] cand {cand} does not exist")
 
-        # cand_top = f"assets/minecraft/textures/block/{name}_top.png"
-        cand_top = f"assets/minecraft/textures/block/azalea_top.png"
+        cand_top = f"assets/minecraft/textures/block/{name}_top.png"
+        # cand_top = f"assets/minecraft/textures/block/azalea_top.png"
         print(f"[debug] attempting to use cand_top {cand_top}")
         if self.exists(cand_top): return cand_top
 

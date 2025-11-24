@@ -240,15 +240,15 @@ if __name__ == "__main__":
     PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
     # DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "flat.zip"
-    # DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "first.zip"
-    DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "castleOnMountain.zip"
+    DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "first.zip"
+    # DEFAULT_WORLD = PROJECT_ROOT / "input" / "worlds" / "castleOnMountain.zip"
     # DEFAULT_PACK = PROJECT_ROOT / "input" / "resource_packs" / "1.21.9-Template.zip"
     DEFAULT_PACK = PROJECT_ROOT / "input" / "resource_packs" / "mad-pixels-16x-v14.zip"
 
-    # DEFAULT_ROI = (0, 0, 16, 16) # x0, z0, x1, z1 in blocks
-    # TILE_CHUNKS = 1
-    DEFAULT_ROI = (-290, 176, 100, -228) # x0, z0, x1, z1 in blocks
-    TILE_CHUNKS = 8
+    DEFAULT_ROI = (0, 0, 16, 16) # x0, z0, x1, z1 in blocks
+    TILE_CHUNKS = 1
+    # DEFAULT_ROI = (-290, 176, 100, -228) # x0, z0, x1, z1 in blocks
+    # TILE_CHUNKS = 8
     OUT_DIR = PROJECT_ROOT / "out"
 
     try:

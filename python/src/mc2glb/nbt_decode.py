@@ -6,41 +6,37 @@ Y_MIN, Y_MAX = -64, 319
 H = Y_MAX - Y_MIN + 1
 
 # Toggle this to enable/disable all debug output
-DEBUG = False
+DEBUG = True
 
 def unpack_palette_indices(data_longs: np.ndarray, bits: int, count: int=4096) -> np.ndarray:
     """
     Unpack 4096 paletted indices from a section's packed LongArray using bits per entry
+
+    Post-20w17a format: Block states are aligned to 64-bit boundaries.
+    Each long contains floor(64/bits) complete entries, with unused high bits.
     """
-    # TODO is this possible? bits seems to be at min 4
-    if bits < 1:
-        return np.zeros((count,), dtype=np.uint32)
-    
-    mask = (1 << bits) - 1
+    longs = data_longs.astype(np.uint64, copy=False)
     out = np.empty(count, dtype=np.uint32)
-    acc = 0
-    acc_bits = 0
+
+    blocks_per_long = 64 // bits  # Integer division - how many complete blocks fit in 64 bits
+    mask = (1 << bits) - 1
     i = 0
 
-    # TODO ensure uint64 possibly unneeded as well since I had previous step converting data_longs to np.uint64
-    longs = data_longs.astype(np.uint64, copy=False)
-
-    for word_idx, word in enumerate(longs):
-        acc |= int(word) << acc_bits
-        acc_bits += 64
-
-        while acc_bits >= bits and i < count:
-            out[i] = acc & mask
-            acc >>= bits
-            acc_bits -= bits
-            i += 1
-
+    for word in longs:
         if i >= count:
             break
-    
+
+        # Extract blocks_per_long values from this long
+        for j in range(blocks_per_long):
+            if i >= count:
+                break
+            out[i] = (word >> (j * bits)) & mask
+            i += 1
+
+    # Fill remaining with zeros if we ran out of data
     if i < count:
         out[i:] = 0
-    
+
     return out
 
 def _name_from_palette_entry(entry) -> str:
@@ -92,6 +88,9 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
         if sy is None:
             continue
 
+        # DEBUG: Only process the surface section for debugging
+        if int(sy) < 48/16 or int(sy) > 80/16: continue
+
         y0 = (int(sy) * 16) - Y_MIN
         y1 = y0 + 16
         if y1 <= 0 or y0 >= H: continue
@@ -107,9 +106,9 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
         palette = [_name_from_palette_entry(e) for e in pal]
 
         palette_excluding_air = [p for p in palette if p != 'minecraft:air']
-        if len(palette_excluding_air) > 2:
-            if DEBUG:
-                print(f"[debug] palette excluding air: {palette_excluding_air}")
+        if DEBUG:
+            print(f"[debug] pal: {pal} with len {len(pal)}")
+            print(f"[debug] palette excluding air: {palette} where palette len is {len(palette)}")
 
         data = bs.get("data")
 
@@ -137,14 +136,10 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
                     pal_i = int(idx[pos])
                     pos += 1
 
-                    # TODO do i really need this safety mechanism?
                     if pal_i >= len(palette):
-                        if DEBUG:
-                            print(f"xx {xx} yy {yy} zz {zz} and pal_i {pal_i} len(palette) {len(palette)}")
-                        # raise RuntimeError("Unexpected for pal_i to exceed len(palette)")
-                        cube[yy, xx, zz] = "minecraft:diamond_block"
-                    else:
-                        cube[yy, xx, zz] = palette[pal_i]
+                        raise RuntimeError(f"Unexpected for pal_i {pal_i} to exceed len(palette) {len(palette)} for xx {xx} yy {yy} zz {zz}")
+
+                    cube[yy, xx, zz] = palette[pal_i]
             
         ys0 = max(y0, 0)
         ys1 = min(y1, H)
