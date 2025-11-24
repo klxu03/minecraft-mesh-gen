@@ -88,9 +88,6 @@ def chunk_to_blocknames(chunk_nbt) -> np.ndarray:
         if sy is None:
             continue
 
-        # DEBUG: Only process the surface section for debugging
-        if int(sy) < 48/16 or int(sy) > 80/16: continue
-
         y0 = (int(sy) * 16) - Y_MIN
         y1 = y0 + 16
         if y1 <= 0 or y0 >= H: continue
