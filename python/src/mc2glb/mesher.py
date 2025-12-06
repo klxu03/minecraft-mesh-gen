@@ -271,6 +271,41 @@ def extract_faces(
 
     def face_tex_for(block_name: str) -> str | None:
         return tex_key_of_blocks.get(block_name, None)
+
+    if DEBUG:
+        # check global_blocks and verify there are non-air blocks
+        print(f"[debug] global_blocks shape: {global_blocks.shape}")
+        found_non_air = False
+        for y in range(H):
+            for x in range(X):
+                for z in range(Z):
+                    a = global_blocks[y, x, z]
+                    if a != "minecraft:air":
+                        print(f"[debug] found non-air block at global_blocks[{y}, {x}, {z}] = {a}")
+                        found_non_air = True
+                        break
+                if found_non_air:
+                    break
+            if found_non_air:
+                break
+        if not found_non_air:
+            print(f"[debug] no non-air blocks found in global_blocks")
+        
+        # check if any blocks are reachable
+        found_reachable = False
+        for y in range(H):
+            for x in range(X):
+                for z in range(Z):
+                    if reachable[y, x, z]:
+                        print(f"[debug] found reachable block at reachable[{y}, {x}, {z}]")
+                        found_reachable = True
+                        break
+                if found_reachable:
+                    break
+            if found_reachable:
+                break
+        if not found_reachable:
+            print(f"[debug] no reachable blocks found in reachable")
     
     # Axis 0: +X
     print(f"[debug] Starting greedy meshing - global_blocks shape: {global_blocks.shape}, reachable shape: {reachable.shape}")

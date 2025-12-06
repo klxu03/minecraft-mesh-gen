@@ -29,6 +29,10 @@ def flood_fill_reachable(
 ) -> np.ndarray:
     """
     """
+
+    if seeds is None or seeds == [] or len(seeds) == 0:
+        raise ValueError("no seeds provided to flood_fill_reachable")
+
     H, X, Z = global_grid.shape
     reachable = np.zeros((H, X, Z), dtype=np.bool_)
     q = deque()

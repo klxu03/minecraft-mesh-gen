@@ -56,6 +56,7 @@ def bake_roi_to_tiles(
     cx0, cz0, cx1, cz1 = world_io.chunk_bounds_from_block_roi(*roi_blocks)
     cx0_h, cz0_h = cx0 - halo_chunks, cz0 - halo_chunks
     cx1_h, cz1_h = cx1 + halo_chunks, cz1 + halo_chunks
+    print(f"[debug] cx0 {cx0}, cz0 {cz0}, cx1 {cx1}, cz1 {cz1} | cx0_h: {cx0_h}, cz0_h: {cz0_h}, cx1_h: {cx1_h}, cz1_h: {cz1_h}")
 
     # 3 build dense global grid [H, X, Z] over ROI+halo
     X = (cx1_h - cx0_h + 1) * 16
@@ -77,6 +78,8 @@ def bake_roi_to_tiles(
         world_z0 = cz0_h * 16
         if (world_x0 <= spawn[0] < world_x0 + X and world_z0 <= spawn[2] < world_z0 + Z):
             seeds.append(spawn)
+        else:
+            seeds.extend(_boundary_seeds_from_roi(global_grid, cx0_h * 16, cz0_h * 16))
     else:
         seeds.extend(_boundary_seeds_from_roi(global_grid, cx0_h * 16, cz0_h * 16))
 
@@ -248,7 +251,8 @@ if __name__ == "__main__":
 
     # DEFAULT_ROI = (0, 0, 16, 16) # x0, z0, x1, z1 in blocks
     # TILE_CHUNKS = 1
-    DEFAULT_ROI = (-290, 176, 100, -228) # x0, z0, x1, z1 in blocks
+    # DEFAULT_ROI = (-290, 176, 100, -228) # x0, z0, x1, z1 in blocks
+    DEFAULT_ROI = (-304, -240, -176, -112) # x0, z0, x1, z1 in blocks
     TILE_CHUNKS = 8
     OUT_DIR = PROJECT_ROOT / "out"
 
